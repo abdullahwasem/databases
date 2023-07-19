@@ -1,0 +1,269 @@
+go
+create database finalexam;
+go
+use finalexam
+
+
+create table creators
+(
+c_id int primary key,
+first_name varchar(10) not null,
+last_name varchar(10) not null,
+[city] varchar(20) not null,
+contact varchar(11) not null,
+email varchar(30),
+[creator_Trainer_id] int foreign key references creators(c_id)
+)
+go
+
+create table piece_type
+(
+[type_id] int primary key,
+[type_name] varchar(30) not null
+)
+
+go
+
+create table art_pieces
+(
+art_id int primary key,
+art_name varchar(30) not null,
+price int not null,
+quantity_available int not null
+)
+
+go
+
+create table art_piece_details(
+art_id int foreign key references art_pieces(art_id) primary key,
+[type_id] int foreign key references piece_type([type_id]),
+creator_id int foreign key references creators(c_id),
+release_date date not null
+)
+
+
+go
+
+create table payment_mode
+(
+p_id int primary key,
+payment_mode varchar(10)
+)
+
+go
+
+
+create table sale 
+(
+s_id int primary key,
+art_id int foreign key references art_pieces(art_id),
+date_of_sale date not null,
+quantity int not null,
+payment_mode_id int foreign key references payment_mode(p_id)
+)
+
+go
+
+
+insert into piece_type ([type_id], [type_name]) values (1,'painting'),
+(2,'sculpture'),
+(3,'portrait'),
+(4,'scenery'),
+(5,'Machine')
+
+go
+
+insert into creators values (1,'Ali','Ahmad','Lahore', '03009434025','abc@hotmail.com',NULL),
+(2,'Alia','Butt','Gujranwala', '03009474025','def@gmail.com',1),
+(3,'Rani','Khurram','Faisalabad', '03339434025','rania@hotmail.com',NULL),
+(4,'Hadia','Tanzeel','Lahore', '03009434052','ramin@hotmail.com',2),
+(5,'Tanzeela','Akbar','Jhelum', '03219434025','tanzeel@hotmail.com',1),
+(6,'Talha','Rana','Lahore', '03001034025','talha@hotmail.com',4),
+(7,'Zulfiqar','Rana','Narowal','03004545898','Abc@d.com',NULL),
+(8,'Sheeraz','Ali','Zafarwal','03004145098','Abc@d.com',4),
+(9,'usman','Rana','Karachi','03004545498','Abc@d.com',1),
+(10,'wasif','Wajid','Islamabad','03005545098','Abc@d.com',3)
+
+
+go
+
+insert into art_pieces values (1,'the rising sun' ,300,20),
+(2,'the setting sun' ,230,2),
+(3,'dark knight' ,90,12),
+(4,'the sunlight',170,33),
+(5,'big man' ,450,21),
+(6,'little things',650,1),
+(7,'beautiful Baby',50,20),
+(8,'mountains',1300,21),
+(9,'song' ,3500,11),
+(10,'sonet',100,31),
+(11,'the set sun' ,100,15),
+(12,'zalmi',250,50),
+(13,'the painting yo',1020,12),
+(14,'Trump Pic' ,150,41),
+(15,'Mind' ,390,7),
+(16,'peace' ,600,12),
+(17,'pleasant',305,1),
+(18,'happy' , 659,21),
+(19,'disturbed',190,21),
+(20,'ignored' ,355,24)
+
+go
+insert into payment_mode (p_id , payment_mode ) values (1,'cash'),
+(2,'card')
+
+go
+
+insert into art_piece_details values(1,5,3,'02/25/2018'),
+(2,2,1,'03/2/2018'),
+(3,3,6,'01/5/2018'),
+(4,4,4,'02/25/2017'),
+(5,5,6,'02/7/2018'),
+(6,1,8,'04/20/2017'),
+(7,2,10,'02/03/2017'),
+(8,3,2,'12/25/2016'),
+(9,4,3,'02/01/2013'),
+(10,5,6,'10/2/2018'),
+(11,2,7,'11/11/2014'),
+(12,3,7,'05/21/2016'),
+(13,4,8,'02/05/2014'),
+(14,5,8,'07/02/2017'),
+(15,3,1,'02/05/2017'),
+(16,2,4,'02/17/2011'),
+(17,1,3,'07/25/2012'),
+(18,2,9,'02/25/2018'),
+(19,1,10,'07/22/2010'),
+(20,4,4,'05/05/2016')
+
+go
+
+insert into sale values (1, 2,'02/11/2018',2, 1),
+(2, 10,'03/25/2018',2, 2),
+(3, 13,'01/03/2018',3, 1),
+(4, 8,'02/11/2018',1, 2),
+(5, 5,'03/04/2018',4, 1),
+(6, 4,'04/09/2018',10, 1),
+(7, 5,'05/04/2018',9 ,1),
+(8, 20,'04/09/2018',7, 1),
+(9, 13,'03/05/2018',2,1),
+(10, 20,'02/01/2018',3, 1),
+(11, 15,'01/02/2018',3, 1)
+
+go
+
+select * from creators as creators
+select * from piece_type as piece_type
+select * from art_pieces as art_pieces
+select * from art_piece_details as art_pieces_details
+select * from sale as sale
+select * from payment_mode as payment_mode
+
+
+--a
+select count(sale.quantity) as quantity, art_pieces.art_id, art_pieces.art_name, creators.first_name from art_piece_details join creators on art_piece_details.creator_id =  creators.c_id 
+join art_pieces on art_pieces.art_id = art_piece_details.art_id join sale on art_pieces.art_id = sale.art_id 
+group by art_pieces.art_id, art_pieces.art_name, creators.first_name
+having count(quantity) < all (select quantity from sale where sale.art_id = 1)
+
+
+--b
+go
+create view notcard
+as
+	select art_pieces.art_id, art_pieces.art_name, art_pieces.price, art_pieces.quantity_available, creators.first_name, creators.last_name from art_piece_details join creators on art_piece_details.creator_id =  creators.c_id 
+	join art_pieces on art_pieces.art_id = art_piece_details.art_id join sale on art_pieces.art_id = sale.art_id join payment_mode on sale.payment_mode_id = payment_mode.p_id where payment_mode.payment_mode != 'card';
+go
+select * from notcard
+
+--c
+go
+select creators.first_name, creators.email from creators where creators.creator_Trainer_id is not NULL
+and creators.c_id in (Select art_piece_details.creator_id from art_piece_details where (type_id = 3 or type_id = 4) and type_id<>2)
+
+
+--2
+go
+create trigger trig_checkfnamelname on creators
+instead of insert as 
+begin
+	declare @c_id int, @fname varchar(10), @lname varchar(20), @city varchar(20), @contact varchar(11), @mail varchar(30), @t_id int;
+	select @fname = first_name from inserted;
+	select @lname = last_name from inserted;
+	if (@fname = @lname)
+	begin
+		print'unsuccessful operation. first name and last name are same'
+	end
+	else
+	begin
+		select @c_id = c_id from inserted;
+		select @fname = first_name from inserted;
+		select @lname = last_name from inserted;
+		select @city = [city] from inserted;
+		select @contact = contact from inserted;
+		select @mail = email from inserted
+		set @t_id = @c_id;
+		insert into creators values(@c_id,  @fname, @lname, @city, @contact, @mail,  @t_id);
+		print 'values successfuly inserted into creators'
+	end
+end
+
+
+
+--3a
+go
+create function getquantity(@c_id int)
+returns int 
+as begin
+	declare @res int;
+	select @res = count(sale.quantity) from art_piece_details join creators on art_piece_details.creator_id =  creators.c_id 
+	join art_pieces on art_pieces.art_id = art_piece_details.art_id join sale on art_pieces.art_id = sale.art_id where creator_id = @c_id
+	return @res
+end
+
+
+--3b
+create view morescenery 
+as	
+	select first_name + ' ' + last_name as name, creators.c_id as ID, sum(sale.quantity) as quantity from creators join art_piece_details on creators.c_id = art_piece_details.creator_id
+	join piece_type on art_piece_details.type_id = piece_type.type_id join art_pieces on art_piece_details.art_id = art_pieces.art_id join sale on art_pieces.art_id
+	= sale.art_id where type_name = 'scenery'
+	group by first_name, last_name, c_id
+	having sum(quantity) > (select sum(sale.quantity) as quantity_of_trainers from creators join art_piece_details on creators.c_id = art_piece_details.creator_id
+	join piece_type on art_piece_details.type_id = piece_type.type_id join art_pieces on art_piece_details.art_id = art_pieces.art_id join sale on art_pieces.art_id
+	= sale.art_id where creator_Trainer_id<>null)
+	
+go
+select * from morescenery;
+
+--4
+go
+create procedure ReturnSoldArtPieces @s_id int, @message varchar(20) output, @refund_amount int output
+as begin
+	declare @s_idfromtable int
+	declare @priceofitem int
+	if  exists (select sale.s_id from sale where sale.s_id = @s_id)
+	begin
+		delete from sale where s_id = @s_id;
+		set @message = 'deleted successfuly'
+		select @priceofitem = art_pieces.price from art_pieces join sale on art_pieces.art_id = sale.art_id where sale.s_id = @s_id;
+		update art_pieces
+		set art_pieces.price = art_pieces.price + @priceofitem
+		where art_pieces.price = (select art_pieces.price from art_pieces join sale on art_pieces.art_id = sale.art_id where sale.s_id = @s_id)
+		set @refund_amount = @priceofitem;
+
+		update art_pieces
+		set art_pieces.quantity_available = art_pieces.quantity_available + 1 
+		where art_pieces.art_id = (select art_pieces.art_id from art_pieces join sale on art_pieces.art_id = sale.art_id where sale.s_id = @s_id)
+	end
+	else
+	begin
+		set @message = 'invalid id'
+	end
+end
+
+declare @status varchar(20), @refunded int
+execute ReturnSoldArtPieces 1, @status output, @refunded output
+
+select @status as status, @refunded as amount_refunded
+
+
